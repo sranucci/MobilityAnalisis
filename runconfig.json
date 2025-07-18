@@ -1,0 +1,13 @@
+{
+    "gtfs": {
+        "ex1" : {
+            "display": false,
+            "limitRoutes": 1000
+        },
+        "ex2" : {
+            "display": true,
+            "limit": 1000,
+            "route_id": "B0005-18818" 
+        }
+    }
+}

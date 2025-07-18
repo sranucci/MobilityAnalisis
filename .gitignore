@@ -1,2 +1,5 @@
 venv/
 gtfs
+results
+src/helpers/__pycache__/__init__.cpython-310.pyc
+src/helpers/__pycache__/database_helpers.cpython-310.pyc

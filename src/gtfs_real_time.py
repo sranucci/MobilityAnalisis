@@ -7,7 +7,7 @@ from google.transit import gtfs_realtime_pb2
 # Load environment variables from .env file
 load_dotenv()
 
-url = "https://api.mobilitytwin.brussels/sncb/gtfs-realtime"
+url = "https://api.mobilitytwin.brussels/tec/gtfs-realtime"
 
 api_key = os.environ.get("API_KEY")
 if not api_key:
