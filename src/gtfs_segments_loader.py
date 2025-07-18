@@ -11,8 +11,8 @@ def main():
     gtfs_zip = str(os.getenv(
         "GTFS_FILE_PATH",
     ))
-    start_date = os.getenv("GTFS_START_DATE", "2025-07-14")
-    end_date   = os.getenv("GTFS_END_DATE",   "2025-07-28")
+    start_date = os.getenv("GTFS_START_DATE")
+    end_date   = os.getenv("GTFS_END_DATE")
 
     # Fetch and persist
     feed = gtfs.Feed(gtfs_zip, start_date=start_date, end_date=end_date)

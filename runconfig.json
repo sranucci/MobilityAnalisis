@@ -5,9 +5,15 @@
             "limitRoutes": 1000
         },
         "ex2" : {
-            "display": true,
+            "display": false,
             "limit": 1000,
             "route_id": "B0005-18818" 
+        },
+        "ex3": {
+            "display" :true,
+            "limit": 10000,
+            "startDate": "2025-07-14",
+            "endDate": "2025-07-18"
         }
     }
 }

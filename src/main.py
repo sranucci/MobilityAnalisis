@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from gtfs.ex1 import doExcersise1
 from helpers.database_helpers import get_db_conn
 from gtfs.ex2 import doExcersise2
+from gtfs.ex3 import doExcersise3
 
 def main():
     # Load environment variables from .env file
@@ -31,6 +32,8 @@ def main():
         print(f"✅ Map saved to '{os.path.join(results_dir, 'exercise1_map.html')}'. Open this file in your browser.")
     elif config.get("gtfs", {}).get("ex2", {}).get("display", False):
         doExcersise2(cur,results_dir,config.get("gtfs", {}).get("ex2", {}))
+    elif config.get("gtfs", {}).get("ex3", {}).get("display", False):
+        doExcersise3(cur,results_dir,config.get("gtfs", {}).get("ex3", {}))
 
     # Clean up
     cur.close()
