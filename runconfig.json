@@ -10,10 +10,19 @@
             "route_id": "B0005-18818" 
         },
         "ex3": {
-            "display" :true,
-            "limit": 10000,
-            "startDate": "2025-07-14",
-            "endDate": "2025-07-18"
+            "speedPerSegmentAverage": {
+                "display" :true,
+                "limit": 10000,
+                "startDate": "2025-07-14",
+                "endDate": "2025-07-18"
+            },
+            "trackTripSpeedAverage": {
+                "display" : true,
+                "tripId": "48490450-L_PA_2025-25_LG_VA-Sem-Vac-27",
+                "startDate": "2025-07-14",
+                "endDate": "2025-07-18"
+            }
+         
         }
     }
 }
