@@ -6,3 +6,5 @@ folium
 geopandas
 geoalchemy2
 dotenv
+gtfs-realtime-bindings
+pyarrow

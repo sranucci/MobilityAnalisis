@@ -10,11 +10,11 @@ def doExcersise2(cur, results_path,ex2Json):
       "route_id": str,    # optional filter on route_id
     }
     """
-    # — unpack parameters —
+
     limit       = ex2Json.get("limit", 100)
     route_id    = ex2Json.get("route_id", False)
 
-    # — build SQL and params —
+
     base_sql = """
         SELECT
           segment_id,
@@ -38,7 +38,6 @@ def doExcersise2(cur, results_path,ex2Json):
 
     sql = base_sql.format(where_clause=where_clause)
 
-    # — load into GeoDataFrame —
     segs_gdf = gpd.GeoDataFrame.from_postgis(
         sql,
         cur.connection,
@@ -47,7 +46,6 @@ def doExcersise2(cur, results_path,ex2Json):
         params=params
     )
 
-    # — center map on centroid of all segments —
     center = segs_gdf.geometry.unary_union.centroid
     m = folium.Map(
         location=[center.y, center.x],
@@ -56,7 +54,6 @@ def doExcersise2(cur, results_path,ex2Json):
         control_scale=True
     )
 
-    # — add each segment_id as a toggleable layer —
     for seg_id, group in segs_gdf.groupby("segment_id"):
         fg = folium.FeatureGroup(name=f"Segment {seg_id}", show=False)
         for geom in group.geometry:

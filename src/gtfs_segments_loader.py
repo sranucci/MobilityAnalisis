@@ -1,8 +1,6 @@
 import os
 from dotenv import load_dotenv
-
 import gtfs_functions as gtfs
-
 from helpers.database_helpers import geodataframe_to_postgis
 
 def main():

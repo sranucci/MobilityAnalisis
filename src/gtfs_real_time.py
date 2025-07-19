@@ -1,23 +1,36 @@
 import os
-from dotenv import load_dotenv
-import requests
+import pyarrow.parquet as pq
+import pyarrow as pa
+import json
 
-from google.transit import gtfs_realtime_pb2
+from helpers.database_realtime_helpers import collect_vehicle_positions
 
-def fetch_gtfs_realtime_data():
-    # Load environment variables from .env file
-    load_dotenv()
+def save_to_parquet(df, fileName):
+  if not df.empty:
+    table = pa.Table.from_pandas(df)
+    pq.write_table(table, fileName)
+    print(f"Data successfully saved to {fileName}")
+  else:
+    print("No data to save.")
 
-    url = "https://api.mobilitytwin.brussels/tec/gtfs-realtime"
 
-    api_key = os.environ.get("API_KEY")
-    if not api_key:
-        raise EnvironmentError("API_KEY environment variable not set.")
 
-    data = requests.get(url, headers={
-            'Authorization': f'Bearer {api_key}'
-    }).content
+# Create gtfs directory if it doesn't exist
+gtfsrt_dir = os.path.join(os.getcwd(), "gtfsrt")
+os.makedirs(gtfsrt_dir, exist_ok=True)
 
-    feed = gtfs_realtime_pb2.FeedMessage()
-    feed.ParseFromString(data)
-    return feed
+# Define file path
+file_path = os.path.join(gtfsrt_dir, "valonia_vehicle_positions.parquet")
+ # Load the configuration from runconfig.json
+with open("runconfig.json", "r") as config_file:
+    config = json.load(config_file)
+
+    fetchConfig = config.get("gtfsRealtime", {}).get("fetchData", {})
+    durationMinutes = fetchConfig.get("durationMinutes")
+    intervalSeconds = fetchConfig.get("intervalSeconds")
+    print(f"Starting data collection for {durationMinutes} minutes, querying every {intervalSeconds} seconds...")
+    vehiclePositionsDf = collect_vehicle_positions(durationMinutes, intervalSeconds)
+    # Save the data to a Parquet fle
+    save_to_parquet(vehiclePositionsDf, file_path)
+
+

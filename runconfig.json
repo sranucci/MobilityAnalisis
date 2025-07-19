@@ -24,5 +24,11 @@
             }
          
         }
+    },
+    "gtfsRealtime":{
+        "fetchData":{
+            "durationMinutes": 3,
+            "intervalSeconds": 10
+        }
     }
 }

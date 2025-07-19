@@ -1,29 +1,57 @@
-from helpers.database_helpers import fetch_gtfs_realtime_data
+import os
+from dotenv import load_dotenv
+import requests
 import time
 import pandas as pd
+from google.transit import gtfs_realtime_pb2
 
+def fetch_feed() -> gtfs_realtime_pb2.FeedMessage:
+    load_dotenv()
+    url = "https://api.mobilitytwin.brussels/tec/gtfs-realtime"
+    api_key = os.environ.get("API_KEY")
+    if not api_key:
+        raise EnvironmentError("API_KEY environment variable not set.")
+    resp = requests.get(
+        url,
+        headers={"Authorization": f"Bearer {api_key}"}
+    )
+    resp.raise_for_status()
+    feed = gtfs_realtime_pb2.FeedMessage()
+    feed.ParseFromString(resp.content)
+    return feed
 
-def extract_vehicle_positions(feed):
-    vehicle_positions = []
+def extract_trip_updates(feed: gtfs_realtime_pb2.FeedMessage) -> list[dict]:
+    """
+    Extrae de cada trip_update:
+     - trip info (trip_id, start_time, start_date, route_id)
+     - por cada stop_time_update: stop_sequence, stop_id, arrival.delay, departure.delay
+     - delay global (tu.delay)
+     - vehicle.id si existe dentro de trip_update
+    """
+    records = []
     for entity in feed.entity:
-        if entity.HasField('vehicle'):
-            vehicle = entity.vehicle
-            vehicle_positions.append({
-                "id": entity.id,
-                "trip_id": vehicle.trip.trip_id,
-                "schedule_relationship": vehicle.trip.schedule_relationship,
-                "latitude": vehicle.position.latitude,
-                "longitude": vehicle.position.longitude,
-                "bearing": vehicle.position.bearing,
-                "speed": vehicle.position.speed * 3.6, # Speed in km/h
-                "current_status": vehicle.current_status,
-                "timestamp": vehicle.timestamp,
-                "stop_id": vehicle.stop_id,
-                "vehicle_id": vehicle.vehicle.id,
-                "vehicle_label": vehicle.vehicle.label,
-                "vehicle_license_plate": vehicle.vehicle.license_plate
-            })
-    return vehicle_positions
+        if entity.HasField("trip_update"):
+            tu = entity.trip_update
+            base = {
+                "entity_id": entity.id,
+                "trip_id": tu.trip.trip_id,
+                "start_time": tu.trip.start_time,
+                "start_date": tu.trip.start_date,
+                "route_id": tu.trip.route_id,
+                "overall_delay": tu.delay if tu.HasField("delay") else None,
+                "vehicle_id": tu.vehicle.id if tu.HasField("vehicle") else None
+            }
+            # registros por parada
+            for stu in tu.stop_time_update:
+                records.append({
+                    **base,
+                    "stop_sequence": stu.stop_sequence,
+                    "stop_id": stu.stop_id,
+                    "arrival_delay": stu.arrival.delay if stu.arrival else None,
+                    "departure_delay": stu.departure.delay if stu.departure else None,
+                    "schedule_relationship": stu.schedule_relationship
+                })
+    return records
 
 # Function that collects a sequence of timestamped positions from a real-time feed
 def collect_vehicle_positions(duration_minutes, interval_seconds):
@@ -31,10 +59,10 @@ def collect_vehicle_positions(duration_minutes, interval_seconds):
     end_time = time.time() + duration_minutes * 60 # Convert minutes to seconds
     while time.time() < end_time:
         # Fetch the GTFS Realtime data
-        feed = fetch_gtfs_realtime_data()
+        feed = fetch_feed()
         # If feed is fetched, extract vehicle positions
         if feed:
-            vehicle_positions = extract_vehicle_positions(feed)
+            vehicle_positions = extract_trip_updates(feed)
             if vehicle_positions:
                 collected_data.extend(vehicle_positions) # Add the new data to the list
         else:
