@@ -19,49 +19,27 @@ def fetch_feed(url) -> gtfs_realtime_pb2.FeedMessage:
     return feed
 
 
-
-
-
-
 def extract_trip_updates(feed1: gtfs_realtime_pb2.FeedMessage) -> list[dict]:
-    """
-    Extrae de cada trip_update:
-     - trip info (trip_id, start_time, start_date, route_id)
-     - por cada stop_time_update: stop_sequence, stop_id, arrival.delay, departure.delay
-     - delay global (tu.delay)
-     - vehicle.id si existe dentro de trip_update
-    """
     records = []
-    length = len(feed1.entity)
     for entity in feed1.entity:
             vehicle = entity.vehicle
             if vehicle.position.speed <= 0 or vehicle.position.latitude == 0 or vehicle.position.longitude == 0:
                 continue
-            tu = entity.trip_update
-            base = {
+            records.append({
                 "entity_id": entity.id,
-                "trip_id": tu.trip.trip_id,
-                "start_time": tu.trip.start_time,
-                "start_date": tu.trip.start_date,
-                "route_id": tu.trip.route_id,
-                "overall_delay": tu.delay if tu.HasField("delay") else None,
-                "vehicle_id": tu.vehicle.id if tu.HasField("vehicle") else None,
-                "bearing" : vehicle.position.bearing,
+                "trip_id": vehicle.trip.trip_id,
+                "schedule_relationship": vehicle.trip.schedule_relationship,
                 "latitude": vehicle.position.latitude,
                 "longitude": vehicle.position.longitude,
-                "speed": vehicle.position.speed,
-                "timestamp": vehicle.position.timestamp
-            }
-            # registros por parada
-            for stu in tu.stop_time_update:
-                records.append({
-                    **base,
-                    "stop_sequence": stu.stop_sequence,
-                    "stop_id": stu.stop_id,
-                    "arrival_delay": stu.arrival.delay if stu.arrival else None,
-                    "departure_delay": stu.departure.delay if stu.departure else None,
-                    "schedule_relationship": stu.schedule_relationship
-                })
+                "bearing": vehicle.position.bearing,
+                "speed": vehicle.position.speed * 3.6, # Speed in km/h
+                "current_status": vehicle.current_status,
+                "timestamp": vehicle.timestamp,
+                "stop_id": vehicle.stop_id,
+                "vehicle_id": vehicle.vehicle.id,
+                "vehicle_label": vehicle.vehicle.label,
+                "vehicle_license_plate": vehicle.vehicle.license_plate
+            })
     return records
 
 # Function that collects a sequence of timestamped positions from a real-time feed

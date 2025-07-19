@@ -19,8 +19,8 @@ gtfsrt_dir = os.path.join(os.getcwd(), "gtfsrt")
 os.makedirs(gtfsrt_dir, exist_ok=True)
 
 # Define file paths
-parquet_file = os.path.join(gtfsrt_dir, "valonia_vehicle_positions.parquet")
-csv_file = os.path.join(gtfsrt_dir, "valonia_vehicle_positions.csv")
+parquet_file = os.path.join(gtfsrt_dir, "canada_vehicle_positions.parquet")
+csv_file = os.path.join(gtfsrt_dir, "canada_vehicle_positions.csv")
 
 # Load the configuration from runconfig.json
 with open("runconfig.json", "r") as config_file:
