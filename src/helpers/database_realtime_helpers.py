@@ -4,21 +4,31 @@ import requests
 import time
 import pandas as pd
 from google.transit import gtfs_realtime_pb2
+from datetime import datetime, timedelta
+
 
 def fetch_feed() -> gtfs_realtime_pb2.FeedMessage:
     load_dotenv()
-    url = "https://api.mobilitytwin.brussels/tec/gtfs-realtime"
+    url = "https://glphprdtmgtfs.glphtrpcloud.com/tmgtfsrealtimewebservice/tripupdate/tripupdates.pb"
     api_key = os.environ.get("API_KEY")
     if not api_key:
         raise EnvironmentError("API_KEY environment variable not set.")
+
+    # calculate epoch seconds for one day ago
+    one_day_ago = datetime.utcnow() - timedelta(days=7)
+    ts = int(one_day_ago.timestamp())
+
     resp = requests.get(
         url,
-        headers={"Authorization": f"Bearer {api_key}"}
+        headers={"Authorization": f"Bearer {api_key}"},
+        params={"timestamp": ts}
     )
     resp.raise_for_status()
+
     feed = gtfs_realtime_pb2.FeedMessage()
     feed.ParseFromString(resp.content)
     return feed
+
 
 def extract_trip_updates(feed: gtfs_realtime_pb2.FeedMessage) -> list[dict]:
     """
@@ -30,7 +40,9 @@ def extract_trip_updates(feed: gtfs_realtime_pb2.FeedMessage) -> list[dict]:
     """
     records = []
     for entity in feed.entity:
-        if entity.HasField("trip_update"):
+            vehicle = entity.vehicle
+            if vehicle.position.speed <= 0 or vehicle.position.latitude == 0 or vehicle.position.longitude == 0:
+                continue
             tu = entity.trip_update
             base = {
                 "entity_id": entity.id,
@@ -39,7 +51,12 @@ def extract_trip_updates(feed: gtfs_realtime_pb2.FeedMessage) -> list[dict]:
                 "start_date": tu.trip.start_date,
                 "route_id": tu.trip.route_id,
                 "overall_delay": tu.delay if tu.HasField("delay") else None,
-                "vehicle_id": tu.vehicle.id if tu.HasField("vehicle") else None
+                "vehicle_id": tu.vehicle.id if tu.HasField("vehicle") else None,
+                "bearing" : vehicle.position.bearing,
+                "latitude": vehicle.position.latitude,
+                "longitude": vehicle.position.longitude,
+                "speed": vehicle.position.speed,
+                "timestamp": vehicle.position.timestamp
             }
             # registros por parada
             for stu in tu.stop_time_update:
@@ -68,6 +85,7 @@ def collect_vehicle_positions(duration_minutes, interval_seconds):
         else:
             print("Failed to fetch the GTFS Realtime feed.")
         # Wait for the specifed interval before making the next request
+        print("Collection success")
         time.sleep(interval_seconds)
     # Convert the collected data into a DataFrame
     df = pd.DataFrame(collected_data)
