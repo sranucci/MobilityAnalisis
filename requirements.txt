@@ -8,3 +8,5 @@ geoalchemy2
 dotenv
 gtfs-realtime-bindings
 pyarrow
+dash
+dash_bootstrap_components

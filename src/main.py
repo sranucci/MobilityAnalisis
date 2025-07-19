@@ -7,6 +7,7 @@ from helpers.database_helpers import get_db_conn
 from gtfs.ex2 import doExcersise2
 from gtfs.ex3 import doExcersise3
 
+
 def main():
     # Load environment variables from .env file
     load_dotenv()
