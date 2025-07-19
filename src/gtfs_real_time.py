@@ -20,5 +20,4 @@ def fetch_gtfs_realtime_data():
 
     feed = gtfs_realtime_pb2.FeedMessage()
     feed.ParseFromString(data)
-    for entity in feed.entity:
-        print(entity)  # You can start by just printing it to inspect the structure
+    return feed
