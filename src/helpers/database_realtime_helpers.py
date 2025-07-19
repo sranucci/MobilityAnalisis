@@ -7,21 +7,10 @@ from google.transit import gtfs_realtime_pb2
 from datetime import datetime, timedelta
 
 
-def fetch_feed() -> gtfs_realtime_pb2.FeedMessage:
+def fetch_feed(url) -> gtfs_realtime_pb2.FeedMessage:
     load_dotenv()
-    url = "https://glphprdtmgtfs.glphtrpcloud.com/tmgtfsrealtimewebservice/tripupdate/tripupdates.pb"
-    api_key = os.environ.get("API_KEY")
-    if not api_key:
-        raise EnvironmentError("API_KEY environment variable not set.")
-
-    # calculate epoch seconds for one day ago
-    one_day_ago = datetime.utcnow() - timedelta(days=7)
-    ts = int(one_day_ago.timestamp())
-
     resp = requests.get(
         url,
-        headers={"Authorization": f"Bearer {api_key}"},
-        params={"timestamp": ts}
     )
     resp.raise_for_status()
 
@@ -30,7 +19,11 @@ def fetch_feed() -> gtfs_realtime_pb2.FeedMessage:
     return feed
 
 
-def extract_trip_updates(feed: gtfs_realtime_pb2.FeedMessage) -> list[dict]:
+
+
+
+
+def extract_trip_updates(feed1: gtfs_realtime_pb2.FeedMessage) -> list[dict]:
     """
     Extrae de cada trip_update:
      - trip info (trip_id, start_time, start_date, route_id)
@@ -39,7 +32,8 @@ def extract_trip_updates(feed: gtfs_realtime_pb2.FeedMessage) -> list[dict]:
      - vehicle.id si existe dentro de trip_update
     """
     records = []
-    for entity in feed.entity:
+    length = len(feed1.entity)
+    for entity in feed1.entity:
             vehicle = entity.vehicle
             if vehicle.position.speed <= 0 or vehicle.position.latitude == 0 or vehicle.position.longitude == 0:
                 continue
@@ -76,7 +70,7 @@ def collect_vehicle_positions(duration_minutes, interval_seconds):
     end_time = time.time() + duration_minutes * 60 # Convert minutes to seconds
     while time.time() < end_time:
         # Fetch the GTFS Realtime data
-        feed = fetch_feed()
+        feed = fetch_feed("https://glphprdtmgtfs.glphtrpcloud.com/tmgtfsrealtimewebservice/vehicle/vehiclepositions.pb")
         # If feed is fetched, extract vehicle positions
         if feed:
             vehicle_positions = extract_trip_updates(feed)
