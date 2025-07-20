@@ -32,8 +32,15 @@
                 "display": false
             },
             "displayAllTrajectories": {
-                "display": true
+                "display": false
             }
+        },
+        "ex2": {
+            "displayRealTimeAverageSpeeds": false
+        },
+        "ex3" : {
+            "displayStopsDelay": false,
+            "displaySegmentsDelay": true
         }
     }
 }

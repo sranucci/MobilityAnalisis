@@ -10,6 +10,12 @@ from gtfs.ex4 import doExercise4
 from gtfsrt.ex1dots import doExerciseRealtime1
 from gtfsrt.ex1Trajectory import doExerciseRealtime1Trajectory
 from gtfsrt.ex1TrajectoryAll import doExcersise1TrajectoryAllRealtime
+from gtfsrt.ex2AverageSpeeds import doExercise2RealtimeAverageSpeeds
+from gtfsrt.ex3DelayPerStopAverage import doExercise3DelayPerStopRealtime
+from gtfsrt.ex4DelayPerSegment import doExercise4SegmentsDelayMap
+
+
+
 
 
 def main():
@@ -49,9 +55,14 @@ def main():
         app.run(debug=True, host="0.0.0.0", port=8051)
 
     if config.get("gtfsRealtime", {}).get("ex1", {}).get("displayAllTrajectories", {}).get("display", False):
-        doExcersise1TrajectoryAllRealtime(cur,results_dir)
+        doExcersise1TrajectoryAllRealtime(cur, results_dir)
 
-
+    if config.get("gtfsRealtime", {}).get("ex2", {}).get("displayRealTimeAverageSpeeds", False):
+        doExercise2RealtimeAverageSpeeds(cur, results_dir)
+    if config.get("gtfsRealtime", {}).get("ex3", {}).get("displayStopsDelay", False):
+        doExercise3DelayPerStopRealtime(cur, results_dir)
+    if config.get("gtfsRealtime", {}).get("ex3", {}).get("displaySegmentsDelay", False):
+        doExercise4SegmentsDelayMap(cur, results_dir)
 
     # Clean up
     cur.close()

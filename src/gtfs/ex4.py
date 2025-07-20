@@ -29,18 +29,26 @@ def doExercise4(cur, results_path):
         crs="EPSG:4326"
     )
 
-    # 3) Build color scale based on trip_count (yellow → red)
-    vmin = gdf["trip_count"].min()
-    vmax = gdf["trip_count"].max()
+    # 2) load into a GeoDataFrame (geometry_3161 in EPSG:3161)
+    speed_gdf = gpd.GeoDataFrame.from_postgis(
+        sql,
+        con=cur.connection,
+        geom_col="geometry_3161",
+        crs="EPSG:3161",
+    )
+
+    # 4) build the color scale (yellow→red) based on Δ
+    vmin = speed_gdf["speed_delta_kmh"].min()
+    vmax = speed_gdf["speed_delta_kmh"].max()
     colormap = branca.colormap.LinearColormap(
-        colors=["green", "red"],
+        colors=["yellow", "red"],
         vmin=vmin,
         vmax=vmax
     )
-    colormap.caption = "Trip Count"  # legend title
+    colormap.caption = "Speed Δ (km/h)"  # legend title
 
-    # 4) Initialize map centered on all shapes
-    center = gdf.geometry.unary_union.centroid
+    # 5) init map
+    center = speed_gdf.geometry.unary_union.centroid
     m = folium.Map(
         location=[center.y, center.x],
         tiles="CartoDB positron",
@@ -48,31 +56,26 @@ def doExercise4(cur, results_path):
         control_scale=True
     )
 
-    # 5) Add each shape, coloring by trip_count
-    for _, row in gdf.iterrows():
+    # 6) add each segment, coloring by its delta
+    for _, row in speed_gdf.iterrows():
         geom = row.geometry
-        # Extract coordinates (handles both LineString and MultiLineString)
-        if geom.geom_type == "MultiLineString":
-            coords_list = [list(seg.coords) for seg in geom.geoms]
-        else:
-            coords_list = [list(geom.coords)]
-        
-        color = colormap(row.trip_count)
-        tooltip = f"Route {row.route_id}: {row.trip_count} trips"
+        coords = [(lat, lon) for lon, lat in geom.coords]
+        color = colormap(row.speed_delta_kmh)
+        tooltip = (
+            f"Expected: {row.expected_speed_kmh:.1f} km/h<br>"
+            f"Actual: {row.actual_speed_kmh:.1f} km/h<br>"
+            f"Δ: {row.speed_delta_kmh:.1f} km/h"
+        )
+        folium.PolyLine(
+            locations=coords,
+            color=color,
+            weight=4,
+            opacity=0.8,
+            tooltip=tooltip
+        ).add_to(m)
 
-        for coords in coords_list:
-            # folium expects [(lat, lon), ...]
-            locations = [(lat, lon) for lon, lat in coords]
-            folium.PolyLine(
-                locations=locations,
-                color=color,
-                weight=4,
-                opacity=0.8,
-                tooltip=tooltip
-            ).add_to(m)
-
-    # 6) Add the legend and save the map
+    # 7) add the legend and save
     colormap.add_to(m)
-    out_fp = os.path.join(results_path, "ex4_trip_count_map.html")
+    out_fp = os.path.join(results_path, "ex3_speed_segments_gradient_map.html")
     m.save(out_fp)
-    print(f"✅ Trip count map saved to '{out_fp}'.")
+    print(f"✅ Gradient speed map saved to '{out_fp}'.")
