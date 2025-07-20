@@ -1,6 +1,7 @@
 import os
 import folium
 import geopandas as gpd
+import branca  # for colormaps
 
 def plot_speed_segments(
     cur,
@@ -20,7 +21,7 @@ def plot_speed_segments(
         km_above_expected
     )
 
-    # 2) load into a GeoDataFrame (geometry_3161 in EPSG:3161), passing params as a dict
+    # 2) load into a GeoDataFrame (geometry_3161 in EPSG:3161)
     speed_gdf = gpd.GeoDataFrame.from_postgis(
         sql,
         con=cur.connection,
@@ -29,17 +30,25 @@ def plot_speed_segments(
         params=params
     )
 
-    # 3) reproject to WGS84 for display on a Leaflet map
+    # 3) reproject to WGS84
     speed_gdf = speed_gdf.to_crs(epsg=4326)
-
-    # 4) make "geometry_3161" the active geometry column and rename to "geometry"
     speed_gdf = (
         speed_gdf
         .set_geometry("geometry_3161")
         .rename_geometry("geometry")
     )
 
-    # 5) init map centered on all segments
+    # 4) build the color scale (yellow→red) based on Δ
+    vmin = speed_gdf["speed_delta_kmh"].min()
+    vmax = speed_gdf["speed_delta_kmh"].max()
+    colormap = branca.colormap.LinearColormap(
+        colors=["yellow", "red"],
+        vmin=vmin,
+        vmax=vmax
+    )
+    colormap.caption = "Speed Δ (km/h)"  # legend title
+
+    # 5) init map
     center = speed_gdf.geometry.unary_union.centroid
     m = folium.Map(
         location=[center.y, center.x],
@@ -48,10 +57,11 @@ def plot_speed_segments(
         control_scale=True
     )
 
-    # 6) add each segment with a hover‐tooltip showing expected vs actual speed
+    # 6) add each segment, coloring by its delta
     for _, row in speed_gdf.iterrows():
         geom = row.geometry
         coords = [(lat, lon) for lon, lat in geom.coords]
+        color = colormap(row.speed_delta_kmh)
         tooltip = (
             f"Expected: {row.expected_speed_kmh:.1f} km/h<br>"
             f"Actual: {row.actual_speed_kmh:.1f} km/h<br>"
@@ -59,16 +69,28 @@ def plot_speed_segments(
         )
         folium.PolyLine(
             locations=coords,
-            color="steelblue",
-            weight=3,
-            opacity=0.7,
+            color=color,
+            weight=4,
+            opacity=0.8,
             tooltip=tooltip
         ).add_to(m)
 
-    # 7) save
-    out_fp = os.path.join(results_path, "speed_segments_map.html")
+    # 7) add the legend and save
+    colormap.add_to(m)
+    out_fp = os.path.join(results_path, "ex3_speed_segments_gradient_map.html")
     m.save(out_fp)
-    print(f"✅ Speed segments map saved to '{out_fp}'.")
+    print(f"✅ Gradient speed map saved to '{out_fp}'.")
+
+# doExercise3 and generate_speed_query remain unchanged
+
+
+
+
+
+
+
+
+
 
 
 def doExercise3(cur, results_path, ex3Json):

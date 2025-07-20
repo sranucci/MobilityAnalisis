@@ -8,12 +8,15 @@
             "route_id": 2716
         },
         "ex3": {
-            "display": true,
+            "display": false,
             "minDateForAverage": "2025-05-04",
             "maxDateForAverage": "2025-08-30",
             "target_date": "2025-07-15",
             "target_trip_id": "426833",
             "km_h_above_expected": 2
+        },
+        "ex4": {
+            "display": true
         }
     },
     "gtfsRealtime":{
