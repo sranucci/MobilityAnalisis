@@ -1,46 +1,46 @@
 #!/bin/bash
 
-# Script to unzip tec_gtfs.zip in the gtfs folder, with option to skip unzipping
+# Script to unzip google_transit.zip in the gtfs folder and load GTFS data into PostgreSQL
 
-SKIP_UNZIP=0
-
-# Parse arguments
-for arg in "$@"; do
-    case $arg in
-        --skip-unzip)
-            SKIP_UNZIP=1
-            shift
-            ;;
-    esac
-done
-
-# Navigate to the gtfs directory
-cd gtfs
-
-# Check if the zip file exists
-if [ ! -f "tec_gtfs.zip" ]; then
-    echo "Error: tec_gtfs.zip not found in the gtfs directory"
+# Check for required DB arguments
+if [ "$#" -lt 4 ]; then
+    echo "Usage: $0 <host> <user> <database> <password>"
     exit 1
 fi
 
-if [ $SKIP_UNZIP -eq 0 ]; then
-    # Unzip the file in the same directory
-    echo "Unzipping tec_gtfs.zip..."
-    unzip -o tec_gtfs.zip
+PGHOST=$1
+PGUSER=$2
+PGDATABASE=$3
+PGPASSWORD=$4
 
-    # Check if unzip was successful
-    if [ $? -eq 0 ]; then
-        echo "Successfully unzipped tec_gtfs.zip"
-        echo "Contents of gtfs directory:"
-        ls -la
-    else
-        echo "Error: Failed to unzip tec_gtfs.zip"
-        exit 1
-    fi
-else
-    echo "Skipping unzip as per --skip-unzip flag."
+# Navigate to the gtfs directory
+cd gtfs || { echo "Error: gtfs directory not found"; exit 1; }
+
+# Check if the zip file exists
+if [ ! -f "google_transit.zip" ]; then
+    echo "Error: google_transit.zip not found in the gtfs directory"
+    exit 1
 fi
 
+# Unzip the file in the same directory
+echo "Unzipping google_transit.zip..."
+unzip -o google_transit.zip
+
+if [ $? -eq 0 ]; then
+    echo "Success unzipping"
+    echo "Contents of gtfs directory:"
+    ls -la
+else
+    echo "Error: Failed to unzip"
+    exit 1
+fi
+
+for file in *.txt; do
+  sed -i 's/ *, */,/g' "$file"  # remove spaces around commas
+done
 
 
-npm exec -- gtfs-to-sql --require-dependencies -- *.txt | psql -h localhost -U postgres -d mobility -b
+# Export password and run gtfs-to-sql + psql
+export PGPASSWORD
+npm exec -- gtfs-to-sql --require-dependencies -- *.txt | psql -h "$PGHOST" -U "$PGUSER" -d "$PGDATABASE" -b
+unset PGPASSWORD

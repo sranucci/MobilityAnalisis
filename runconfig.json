@@ -1,28 +1,22 @@
 {
     "gtfs": {
         "ex1" : {
-            "display": false,
-            "limitRoutes": 1000
+            "perRouteViewDisplay" : false
         },
-        "ex2" : {
+        "ex2": {
             "display": false,
-            "limit": 1000,
-            "route_id": "B0005-18818" 
+            "route_id": 2716
         },
         "ex3": {
-            "speedPerSegmentAverage": {
-                "display" :true,
-                "limit": 10000,
-                "startDate": "2025-07-14",
-                "endDate": "2025-07-18"
-            },
-            "trackTripSpeedAverage": {
-                "display" : true,
-                "tripId": "48490450-L_PA_2025-25_LG_VA-Sem-Vac-27",
-                "startDate": "2025-07-14",
-                "endDate": "2025-07-18"
-            }
-         
+            "display": false,
+            "minDateForAverage": "2025-05-04",
+            "maxDateForAverage": "2025-08-30",
+            "target_date": "2025-07-15",
+            "target_trip_id": "426833",
+            "km_h_above_expected": 2
+        },
+        "ex4": {
+            "display": true
         }
     },
     "gtfsRealtime":{
