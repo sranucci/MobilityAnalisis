@@ -16,13 +16,24 @@
             "km_h_above_expected": 2
         },
         "ex4": {
-            "display": true
+            "display": false
         }
     },
     "gtfsRealtime":{
         "fetchData":{
             "durationMinutes": 10,
             "intervalSeconds": 10
+        },
+        "ex1" : {
+            "displayDots" : {
+                "display": false
+            },
+            "displayTrajectory": {
+                "display": false
+            },
+            "displayAllTrajectories": {
+                "display": true
+            }
         }
     }
 }
