@@ -13,6 +13,7 @@ from gtfsrt.ex1TrajectoryAll import doExcersise1TrajectoryAllRealtime
 from gtfsrt.ex2AverageSpeeds import doExercise2RealtimeAverageSpeeds
 from gtfsrt.ex3DelayPerStopAverage import doExercise3DelayPerStopRealtime
 from gtfsrt.ex4DelayPerSegment import doExercise4SegmentsDelayMap
+from gtfsrt.ex4DelayGraphs import doExercise4DelayDashboard
 
 
 
@@ -64,6 +65,10 @@ def main():
         doExercise3DelayPerStopRealtime(cur, results_dir)
     if config.get("gtfsRealtime", {}).get("ex3", {}).get("displaySegmentsDelay", False):
         doExercise4SegmentsDelayMap(cur, results_dir)
+    if config.get("gtfsRealtime", {}).get("ex3", {}).get("displayDashboardDelay", False):
+        app = doExercise4DelayDashboard(cur)
+        app.run(debug=True, port=8052)
+
 
     # Clean up
     cur.close()

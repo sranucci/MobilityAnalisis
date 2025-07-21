@@ -16,7 +16,7 @@
             "km_h_above_expected": 2
         },
         "ex4": {
-            "display": true
+            "display": false
         }
     },
     "gtfsRealtime":{
@@ -40,7 +40,8 @@
         },
         "ex3" : {
             "displayStopsDelay": false,
-            "displaySegmentsDelay": false
+            "displaySegmentsDelay": false,
+            "displayDashboardDelay": true
         }
     }
 }
