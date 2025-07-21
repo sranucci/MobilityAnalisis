@@ -42,6 +42,7 @@ def main():
         doExercise4(cur, results_dir)
 
 
+
     display_dots = config.get("gtfsRealtime", {}).get("ex1", {}).get("displayDots", {}).get("display", False)
     display_trajectory = config.get("gtfsRealtime", {}).get("ex1", {}).get("displayTrajectory", {}).get("display", False)
     if display_dots and display_trajectory:

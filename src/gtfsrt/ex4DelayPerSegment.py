@@ -21,7 +21,7 @@ def doExercise4SegmentsDelayMap(cur, results_path):
     SELECT
       seg_geo   AS geometry,
       no_trips_seg,
-      CASE WHEN avg_span_actual - avg_span_schedule < 0 THEN 1 ELSE 0 END
+      CASE WHEN avg_span_actual - avg_span_schedule < -1 THEN 1 ELSE 0 END
          AS has_delay
     FROM agg_by_seg
     """
