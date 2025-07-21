@@ -40,7 +40,7 @@
         },
         "ex3" : {
             "displayStopsDelay": false,
-            "displaySegmentsDelay": true
+            "displaySegmentsDelay": false
         }
     }
 }
